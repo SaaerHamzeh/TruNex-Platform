@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ar">
+  <head>
+    <meta charset="UTF-8" />
+    <title>تسجيل دخول الإدارة</title>
+    <style>
+      body {
+        background-color: #ecf0f1;
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      
+      .login-container {
+        background-color: #fff;
+        padding: 30px 40px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        width: 350px;
+        text-align: center;
+      }
+      
+      .login-container h2 {
+        margin-bottom: 25px;
+        color: #2c3e50;
+      }
+      
+      .login-container label {
+        display: block;
+        text-align: left;
+        margin-bottom: 5px;
+        color: #34495e;
+        font-size: 14px;
+      }
+      
+      .login-container input[type='text'],
+      .login-container input[type='password'] {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+      }
+      
+      .login-container button {
+        width: 100%;
+        padding: 10px;
+        background-color: #2980b9;
+        border: none;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+      
+      .login-container button:hover {
+        background-color: #3498db;
+      }
+      
+      .error-message {
+        color: red;
+        margin-top: 10px;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <h2>تسجيل دخول الإدارة</h2>
+      <form method="post">
+        {% csrf_token %}
+        <label for="username">اسم المستخدم:</label>
+        <input type="text" id="username" name="username" required />
+
+        <label for="password">كلمة المرور:</label>
+        <input type="password" id="password" name="password" required />
+
+        <button type="submit">دخول</button>
+      </form>
+
+      {% for message in messages %}
+        <p class="error-message">{{ message }}</p>
+      {% endfor %}
+    </div>
+  </body>
+</html>

@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar">
+  <head>
+    <meta charset="UTF-8" />
+    <title>
+      {% if news_source %}
+        تعديل
+      {% else %}
+        إضافة
+      {% endif %}مصدر
+    </title>
+    <link rel="stylesheet" href="{% static 'css/news_source_form.css' %}" />
+  </head>
+  <body>
+    <div class="form-container">
+      <h2 style="text-align: center; color: #2980b9; margin-bottom: 30px;">
+        {% if news_source %}
+          تعديل
+        {% else %}
+          إضافة
+        {% endif %}مصدر 📰
+      </h2>
+      <form method="POST">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label>news source & name</label>
+          <div class="split-inputs">
+            <input type="text" placeholder="NAME" name="name" value="{{ news_source.news_source_name|default:'' }}" required />
+            <input type="text" placeholder="URL" name="url" value="{{ news_source.news_source_url|default:'' }}" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>⚙️ طريقة الجلب واللغة:</label>
+          <div class="split-inputs">
+            <select name="fetch_method" required data-selected="{{ news_source.news_source_method|default:'api' }}">
+              <option value="api">API</option>
+              <option value="rss">RSS</option>
+              <option value="scraper">Scraper</option>
+            </select>
+
+            <select name="fetch_language" required data-selected="{{ news_source.news_source_language|default:'en' }}">
+              <option value="en">الإنجليزية</option>
+              <option value="ar">العربية</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>⏱️ الفاصل الزمني وعدد المقالات:</label>
+          <div class="split-inputs">
+            <input type="number" name="fetch_interval" min="1" value="{{ news_source.fetch_interval_minutes|default:60 }}" />
+            <input type="number" name="fetch_limit" min="1" value="{{ news_source.fetch_limit|default:10 }}" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>🌍 الروابط الفرعية:</label>
+          <div id="sections-wrapper">
+            {% if news_source and news_source.section_urls.all %}
+              {% for section in news_source.section_urls.all %}
+                <div class="section-group">
+                  <input type="text" name="section_url" placeholder="رابط القسم" value="{{ section.section_url }}" />
+                  <input type="text" name="section_type" placeholder="نوع القسم" value="{{ section.section_type }}" />
+                  <select name="section_region" data-selected="{{ section.section_region|default:'' }}">
+                    <option value="">بدون نطاق</option>
+                    <option value="syria">Syria</option>
+                    <option value="arab">Arab</option>
+                    <option value="world">World</option>
+                  </select>
+                  <button type="button" class="remove-section-btn" onclick="removeSection(this)">-</button>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="section-group">
+                <input type="text" name="section_url" placeholder="رابط القسم" />
+                <input type="text" name="section_type" placeholder="نوع القسم" />
+                <select name="section_region">
+                  <option value="">بدون نطاق</option>
+                  <option value="syria">Syria</option>
+                  <option value="arab">Arab</option>
+                  <option value="world">World</option>
+                </select>
+                <button type="button" class="remove-section-btn" onclick="removeSection(this)">-</button>
+              </div>
+            {% endif %}
+          </div>
+          <button type="button" class="add-section-btn" onclick="addSection()">+ أضف رابط فرعي</button>
+        </div>
+
+        <button type="submit">💾 حفظ المصدر</button>
+      </form>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        // تعيين القيم المحددة مسبقًا بناءً على data-selected
+        document.querySelectorAll('select').forEach((select) => {
+          const selected = select.getAttribute('data-selected')
+          if (selected) {
+            select.value = selected
+          }
+        })
+      })
+    </script>
+
+    <script>
+      function addSection() {
+        const wrapper = document.getElementById('sections-wrapper')
+        const div = document.createElement('div')
+        div.className = 'section-group'
+        div.innerHTML = `
+                      <input type="text" name="section_url" placeholder="رابط القسم">
+                      <input type="text" name="section_type" placeholder="نوع القسم">
+                      <select name="section_region">
+                        <option value="">بدون نطاق</option>
+                        <option value="syria">Syria</option>
+                        <option value="arab">Arab</option>
+                        <option value="world">World</option>
+                      </select>
+                      <button type="button" class="remove-section-btn" onclick="removeSection(this)">-</button>
+                    `
+        wrapper.appendChild(div)
+      }
+      
+      function removeSection(button) {
+        button.parentElement.remove()
+      }
+    </script>
+  </body>
+</html>

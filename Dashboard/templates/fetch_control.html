@@ -1,0 +1,122 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/fetch_control_style.css' %}" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" />
+<div class="fetch-wrapper">
+  <div class="fetch-container">
+    {% block content_fetch %}
+      <div class="fetch-inner">
+        <div class="fetch-shell fetch-grid-3col">
+          {% comment %} <h2 class="text-3xl font-bold flex items-center gap-2 mb-6">⚙️ Automatic Fetching Panel</h2> {% endcomment %}
+          <div class="fetch-grid-3col">
+            <!-- 🔴 Logs -->
+            <div class="box" id="log-output">
+              <p class="text-sm text-gray-400 mb-1">Next Automatic Fetch After..</p>
+              <p id="countdown" class="">Waiting...</p>
+
+              <p class="text-sm text-gray-400 mb-2">📡 Live Logs:</p>
+              <div id="log-messages"></div>
+            </div>
+
+            <!-- 🟢 Status Info -->
+            <div class="box">
+              <p class="text-sm text-gray-400">Status:</p>
+              <p class="text-xl font-semibold text-green-400">🟢 {{ fetch_status }}</p>
+              <p class="text-sm text-gray-400">Enabled Automatically:</p>
+              <p id="fetch-status" class="text-xl font-semibold">{{ is_fetching_enabled|yesno:'🟢 مفعل,🔴 متوقف' }}</p>
+
+              <form id="toggle-fetch-form" method="POST" action="{% url 'toggle_fetch' %}">
+                {% csrf_token %}
+                <button id="toggle-btn" type="submit" class="action-buttons">
+                  {% if is_fetching_enabled %}
+                    ⛔ Stop Automatic Fetching
+                  {% else %}
+                    ✅ Enable Automatic Fetching
+                  {% endif %}
+                </button>
+              </form>
+
+              <form id="fetch-now-form" method="POST" action="{% url 'run_fetch_now' %}">
+                {% csrf_token %}
+                <button type="submit" class="action-buttons">Fetch Now</button>
+              </form>
+
+              <form id="update-form" method="POST" action="{% url 'update_fetch_interval' %}" class="space-y-4 mt-4">
+                {% csrf_token %}
+                <label class="block text-sm text-gray-400 mb-1">Fetching Interval By (Min):</label>
+                <input type="number" name="fetch_interval" min="1" value="{{ fetch_interval }}" class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600" />
+                <label class="block text-sm text-gray-400 mb-1">Number Of Fetching Limit:</label>
+                <input type="number" name="fetch_limit" min="1" value="{{ fetch_limit }}" class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600" />
+                <button type="submit" class="action-buttons w-full py-2 px-4 bg-yellow-500 hover:bg-yellow-600 text-black font-bold rounded-xl transition">Change 💾</button>
+              </form>
+            </div>
+
+            <!-- 📰 stats -->
+            <div class="box">
+              <strong>Total number of articles:</strong>
+              <span id="total-articles">...</span>
+              <h3 class="text-lg font-semibold mb-2">News Types</h3>
+              <canvas id="chart-news-types" height="200"></canvas>
+            </div>
+          </div>
+          <div class="fetch-grid-3col">
+            <div class="box" style="display:inline-grid; align-content: space-between;">
+              <h3 class="text-lg font-semibold mb-2">Regions</h3>
+              <canvas id="chart-regions" height="150"></canvas>
+            </div>
+
+            <div class="box" style="display:inline-grid; align-content: space-between;max-height: 400px;">
+              <h3 class="text-lg font-semibold mb-2">Fake/Real News</h3>
+              <canvas id="chart-fake-real" height="150"></canvas>
+            </div>
+
+            <div class="box" style="display:inline-grid; align-content: space-between; max-height: 400px;">
+              <h3 class="text-lg font-semibold mb-2">Most productive sources</h3>
+              <canvas id="chart-top-sources" height="150"></canvas>
+            </div>
+          </div>
+
+          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          <script>
+            document.addEventListener('DOMContentLoaded', () => {
+              fetch('/AdminDashboard/admin/stats/')
+                .then((res) => res.json())
+                .then((data) => {
+                  document.getElementById('total-articles').textContent = data.total_articles
+            
+                  const makeChart = (ctxId, chartType, chartData, hideLegend = false) => {
+                    const ctx = document.getElementById(ctxId)
+                    if (!ctx) return
+            
+                    const chartOptions = hideLegend ? { plugins: { legend: { display: false } } } : {}
+            
+                    new Chart(ctx, {
+                      type: chartType,
+                      data: {
+                        labels: Object.keys(chartData),
+                        datasets: [
+                          {
+                            data: Object.values(chartData),
+                            backgroundColor: ['#4ade80', '#60a5fa', '#facc15', '#f87171', '#a78bfa', '#f472b6']
+                          }
+                        ]
+                      },
+                      options: chartOptions
+                    })
+                  }
+            
+                  // بدون legend
+                  makeChart('chart-fake-real', 'bar', data.fake_real, true)
+                  makeChart('chart-top-sources', 'bar', data.top_sources, true)
+            
+                  // مع legend بشكل طبيعي
+                  makeChart('chart-news-types', 'pie', data.news_types)
+                  makeChart('chart-regions', 'doughnut', data.regions)
+                })
+                .catch(console.error)
+            })
+          </script>
+        </div>
+      </div>
+    {% endblock %}
+  </div>
+</div>

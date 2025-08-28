@@ -1,0 +1,16 @@
+# Ignore virtual environment
+venv/
+
+# Ignore model files (if they are too large or generated)
+models/
+
+# Ignore SQLite database
+db.sqlite3
+
+# Ignore pyc files
+__pycache__/
+*.pyc
+
+# Ignore log files
+*.log
+celerybeat-schedule.*

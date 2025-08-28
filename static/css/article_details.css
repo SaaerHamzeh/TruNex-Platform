@@ -1,0 +1,136 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f3f6fa;
+    direction: rtl;
+    overflow: hidden;
+}
+
+.article-details-wrapper {
+    max-width: 1200px;
+    height: 100vh;
+    margin: 0 auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.article-header {
+    font-size: 1.7rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #2c3e50;
+}
+
+.article-grid {
+    display: flex;
+    gap: 1.5rem;
+    flex: 1;
+    min-height: 0;
+}
+
+.image-box {
+    flex: 1.2;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.image-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.info-box {
+    flex: 1;
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    overflow-y: auto;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.info-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #e8f4ff;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: #333;
+    flex-direction: row-reverse;
+    /* 🔄 أهم سطر لعكس الترتيب */
+    text-align: right;
+}
+
+.label {
+    font-weight: bold;
+    color: #2c3e50;
+    min-width: 140px;
+    text-align: left;
+    padding-left: 1rem;
+}
+
+.value {
+    flex: 1;
+    word-break: break-word;
+    text-align: right;
+}
+
+.value a {
+    color: #2980b9;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.value a:hover {
+    text-decoration: underline;
+}
+
+.article-summary-box {
+    margin-top: 1.5rem;
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    max-height: 30%;
+    overflow-y: auto;
+}
+
+.article-summary-box strong {
+    display: block;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+}
+
+.article-summary-box p {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: #444;
+}
+
+/* ✅ Responsive */
+@media (max-width: 768px) {
+    .article-grid {
+        flex-direction: column;
+    }
+
+    .image-box,
+    .info-box {
+        height: 45%;
+    }
+
+    .article-summary-box {
+        max-height: 25%;
+    }
+}

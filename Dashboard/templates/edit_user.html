@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>تعديل المستخدم</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 30px;
+        background-color: #f4f4f4;
+      }
+      .form-container {
+        background-color: white;
+        padding: 25px;
+        max-width: 400px;
+        margin: auto;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      input[type='text'],
+      input[type='email'] {
+        width: 100%;
+        padding: 8px;
+        margin-top: 10px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+      }
+      button {
+        background-color: #2980b9;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #3498db;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="form-container">
+      <h2>تعديل المستخدم</h2>
+      <form method="POST">
+        {% csrf_token %}
+        <label>اسم المستخدم:</label>
+        <input type="text" name="username" value="{{ user_obj.username }}" required />
+
+        <label>البريد الإلكتروني:</label>
+        <input type="email" name="email" value="{{ user_obj.email }}" required />
+
+        <button type="submit">حفظ التعديلات</button>
+      </form>
+    </div>
+  </body>
+</html>

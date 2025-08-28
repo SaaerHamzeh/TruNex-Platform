@@ -1,0 +1,478 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" />
+    {% comment %} <script src="{% static 'Js/fetch_control.js' %}" defer></script> {% endcomment %}
+    {% comment %} <script src="{% static 'Js/fetch_control.js' %}?v=2"></script> {% endcomment %}
+  </head>
+
+  <body>
+    <!-- topbar -->
+    <div class="navbar">
+      <div class="navbar-left">
+        <img src="{% static 'images/trunex1.png' %}" alt="TruNex Logo" class="logo-img" />
+        <span class="navbar-title">Admin Dashboard</span>
+      </div>
+
+      <div class="navbar-center">
+        <a href="#fetch_control">auto fetch view</a>
+        <a href="#users">Users</a>
+        <a href="#links">Links</a>
+        <a href="#articles">Articles</a>
+        {% comment %} <a href="#stats">Stats</a> {% endcomment %}
+      </div>
+
+      <div class="navbar-right">
+        <div class="user-info">
+          <span class="username">{{ request.user.username }}</span>
+          <a href="{% url 'admin_logout' %}" id="logout-btn" >Log out</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Section -->
+    <div class="main">
+      <!-- Content -->
+      <div class="content">
+        <!-- fetch control -->
+        <div class="card" id="fetch_control">
+          <div class="fetch-wrapper">
+            {% include 'fetch_control.html' %}
+          </div>
+        </div>
+
+        <!-- Users Section -->
+        <div class="card" id="users">
+          <h3>Users - المستخدمون</h3>
+          <table>
+            <tr style="color: aqua;">
+              <th>User Name</th>
+              <th>E-mail</th>
+              <th>Registerd Time</th>
+              <th>Actions</th>
+            </tr>
+            {% for user in users %}
+              <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.date_joined|date:'Y-m-d' }}</td>
+                <td>
+                  <!-- زر تعديل -->
+                  {% comment %} <a href="{% url 'edit_user' user.id %}" class="edit-btn">تعديل</a> {% endcomment %}
+
+                  <!-- زر حذف -->
+                  <form action="{% url 'delete_user' user.id %}" method="POST" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="edit-btn danger" onclick="return confirm('هل أنت متأكد من حذف هذا المستخدم؟');">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </table>
+          <!-- ✅ تنقل المستخدمين -->
+          <div style="text-align: center; margin-top: 20px;">
+            {% if users.has_next %}
+              <a class="edit-btn" href="?user_page={{ users.next_page_number }}&article_page={{ articles.number }}&link_page={{ links.number }}#users">next</a>
+            {% endif %}
+
+            <span style="margin: 0 15px;">الصفحة {{ users.number }} من {{ users.paginator.num_pages }}</span>
+
+            {% if users.has_previous %}
+              <a class="edit-btn" href="?user_page={{ users.previous_page_number }}&article_page={{ articles.number }}&link_page={{ links.number }}#users">pre</a>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Links Section -->
+        <div class="card" id="links">
+          <h3 style="display: flex; justify-content: space-between; align-items: center;">
+            <span>NewsSource - روابط المواقع</span>
+
+            <span><a href="{% url 'add_link' %}" class="edit-btn" style="margin-right: 10px;">➕ ADD</a></span>
+          </h3>
+
+          <table>
+            <tr>
+              <th>Source Name</th>
+              <th>URL</th>
+              <th>
+                No of Articles<br />Want to Fetch
+              </th>
+              <th>last_fetched_at</th>
+              <th>No of Stored Articles</th>
+              <th>Actions</th>
+            </tr>
+            {% for link in links %}
+              <tr>
+                <td>{{ link.news_source_name }}</td>
+                <td>
+                  <a href="{{ link.news_source_url }}" target="_blank">{{ link.news_source_url|truncatechars:40 }}</a>
+                </td>
+                <td>{{ link.fetch_limit }}</td>
+                <td>{{ link.last_fetched_at|date:'Y-m-d H:i' }}</td>
+                <td>{{ link.newsarticle_set.count }}</td>
+                <td>
+                  <a href="{% url 'edit_link' link.news_source_id %}" class="edit-btn" style="background-color: rgb(79, 149, 79);;">Edit</a>
+                  <form action="{% url 'delete_link' link.news_source_id %}" method="POST" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="edit-btn danger" onclick="return confirm('هل أنت متأكد من الحذف؟');">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </table>
+
+          <!-- ✅ تنقل الروابط -->
+          <div style="text-align: center; margin-top: 20px;">
+            {% if links.has_next %}
+              <a class="edit-btn" href="?link_page={{ links.next_page_number }}&user_page={{ users.number }}&article_page={{ articles.number }}#links">next</a>
+            {% endif %}
+
+            <span style="margin: 0 15px;">الصفحة {{ links.number }} من {{ links.paginator.num_pages }}</span>
+
+            {% if links.has_previous %}
+              <a class="edit-btn" href="?link_page={{ links.previous_page_number }}&user_page={{ users.number }}&article_page={{ articles.number }}#links">pre</a>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Articles Section -->
+        <div class="card" id="articles">
+          <div class="articles-wrapper">
+            <!-- ✅ Sidebar: Controls -->
+            <aside class="articles-controls">
+              <!-- عنوان وزر الإضافة -->
+              <header class="controls-header">
+                <h3>📰 Articles - المقالات</h3>
+                {% comment %} <a href="{% url 'add_article' %}" class="edit-btn">➕ ADD</a> {% endcomment %}
+              </header>
+
+              <!-- نموذج البحث -->
+              <form method="GET" class="search-form">
+                <input type="text" name="title" placeholder="بحث بالعنوان…" value="{{ request.GET.title }}" />
+
+                <select id="source-select" name="source_id">
+                  {% for source in sources %}
+                    <option value="{{ source.news_source_id }}">{{ source.news_source_name }}</option>
+                  {% endfor %}
+                </select>
+
+                <input type="text" name="region" placeholder="📍 المنطقة" value="{{ request.GET.region }}" />
+                <input type="text" name="type" placeholder="📄 النوع" value="{{ request.GET.type }}" />
+
+                <label>between</label>
+                <input type="date" name="published_from" value="{{ request.GET.published_from }}" />
+                <label>&</label>
+                <input type="date" name="published_to" value="{{ request.GET.published_to }}" />
+
+                <button type="submit" class="edit-btn">🔎 search</button>
+                <a href="{% url 'dashboard_home' %}#articles" class="edit-btn">🔄 reset</a>
+              </form>
+
+              <!-- تنقل الصفحات -->
+              <nav class="pagination">
+                {% if articles.has_previous %}
+                  <a class="edit-btn" href="?article_page={{ articles.previous_page_number }}&user_page={{ users.number }}&link_page={{ links.number }}#articles">⬅️ pre</a>
+                {% endif %}
+
+                <span>الصفحة {{ articles.number }} / {{ articles.paginator.num_pages }}</span>
+
+                {% if articles.has_next %}
+                  <a class="edit-btn" href="?article_page={{ articles.next_page_number }}&user_page={{ users.number }}&link_page={{ links.number }}#articles">next ➡️</a>
+                {% endif %}
+              </nav>
+            </aside>
+
+            <!-- ✅ Main Content: Table -->
+            <section class="articles-table">
+              <form method="POST" action="{% url 'delete_multiple_articles' %}" id="bulk-delete-form">
+                {% csrf_token %}
+                <div class="table-wrapper">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>
+                          <input type="checkbox" id="select-all" />
+                        </th>
+                        <th>Source</th>
+                        <th>Title</th>
+                        <th>Region</th>
+                        <th>Type</th>
+                        <th>Is it fake?</th>
+                        <th>Content</th>
+                        <th>Published At</th>
+                        <th>Added At</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for article in articles %}
+                        <tr>
+                          <td>
+                            <input type="checkbox" name="selected_articles" value="{{ article.news_article_id }}" />
+                          </td>
+                          <td style="max-width: 160px;">{{ article.news_article_source|truncatechars:35 }}</td>
+                          <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ article.news_article_title }}</td>
+                          <td>{{ article.news_article_region }}</td>
+                          <td>{{ article.news_article_type }}</td>
+                          <td>
+                            {% if article.news_article_is_fake == True %}
+                              <span style="color:red;">{{ article.news_article_fake_score|floatformat:0 }}% - Fake</span>
+                            {% elif article.news_article_is_fake == False %}
+                              <span style="color:green;">Real</span>
+                            {% else %}
+                              <span style="color:gray;">Unknown</span>
+                            {% endif %}
+                          </td>
+                          <td style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ article.news_article_content|truncatechars:100 }}</td>
+                          <td style="min-width: 100px;">{{ article.news_article_published_at }}</td>
+                          <td style="min-width: 100px;">{{ article.created_at|date:'Y-m-d' }}</td>
+                          <td style="min-width: 150px;">
+                            <a href="{% url 'edit_article' article.news_article_id %}" class="edit-btn" target="_blank" style="background-color:rgb(79, 149, 79);">View</a>
+                            <form action="{% url 'delete_article' article.news_article_id %}" method="POST" style="display:inline;">
+                              {% csrf_token %}
+                              <button type="submit" class="edit-btn danger" onclick="return confirm('هل أنت متأكد من الحذف؟');">Delete</button>
+                            </form>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+
+                <button type="submit" class="edit-btn danger" style="margin-top: 10px;" onclick="return confirm('هل تريد حذف جميع المقالات المحددة؟')">Checked Delete 🗑</button>
+              </form>
+            </section>
+          </div>
+        </div>
+
+        <!-- ✅ سكربتات إضافية -->
+        <script>
+          // تفعيل اختيار الكل
+          document.getElementById('select-all').addEventListener('change', function () {
+            const checkboxes = document.querySelectorAll('input[name="selected_articles"]')
+            checkboxes.forEach((cb) => (cb.checked = this.checked))
+          })
+          
+          // تفعيل القائمة المختارة تلقائياً
+          const urlParams = new URLSearchParams(window.location.search)
+          const sourceId = urlParams.get('source_id')
+          if (sourceId) {
+            const selectElement = document.getElementById('source-select')
+            if (selectElement) {
+              selectElement.value = sourceId
+            }
+          }
+        </script>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const cards = document.querySelectorAll('.card')
+        const navLinks = document.querySelectorAll('.navbar-center a')
+      
+        // دالة تبديل الكارد والزر المفعَّل
+        function activateSection(id) {
+          /* 1) الكروت */
+          cards.forEach((card) => card.classList.toggle('active', card.id === id))
+      
+          /* 2) أزرار النافبار */
+          navLinks.forEach((link) => {
+            const linkTarget = link.getAttribute('href').substring(1) // يشيل #
+            link.classList.toggle('active', linkTarget === id)
+          })
+        }
+      
+        /* كليك على أي زر بالنافبار */
+        navLinks.forEach((link) => {
+          link.addEventListener('click', (e) => {
+            const targetId = e.currentTarget.getAttribute('href').substring(1)
+            activateSection(targetId)
+          })
+        })
+      
+        /* عند أول تحميل - اختَر أول كارد أو اللي بالـ URL */
+        const initial = location.hash ? location.hash.substring(1) : 'fetch_control'
+        activateSection(initial)
+      })
+    </script>
+
+    <script>
+      window.addEventListener('DOMContentLoaded', () => {
+        /* ------------------------------------------------------------------ */
+        /* 1) WebSocket                                                       */
+        /* ------------------------------------------------------------------ */
+        const socket = new WebSocket('ws://' + window.location.host + '/ws/fetch-logs/')
+        socket.addEventListener('open', () => console.log('[WS] connected (combined script)'))
+      
+        /* ✅ دالة واحدة للإرسال */
+      
+        function sendBroadcast(data) {
+          socket.send(
+            JSON.stringify({
+              type: 'broadcast',
+              ...data
+            })
+          )
+        }
+      
+        // ✅ كشفها للكونسول
+        window.sendBroadcast = sendBroadcast
+      
+        /* ✅ استقبال الرسائل وتوزيعها حسب subtype */
+        socket.addEventListener('message', (event) => {
+          const data = JSON.parse(event.data)
+          const subtype = data.subtype
+      
+          switch (subtype) {
+            case 'log':
+              const logContainer = document.getElementById('log-messages')
+              if (logContainer) {
+                const line = document.createElement('div')
+                line.textContent = data.message
+                logContainer.prepend(line)
+              }
+              break
+      
+            case 'countdown':
+              const countdownEl = document.getElementById('countdown')
+              if (data.next_fetch_timestamp && countdownEl) {
+                const targetTime = data.next_fetch_timestamp * 1000
+                const updateCountdown = () => {
+                  const secondsLeft = Math.max(0, Math.floor((targetTime - Date.now()) / 1000))
+                  const minutes = Math.floor(secondsLeft / 60)
+                  const seconds = secondsLeft % 60
+                  countdownEl.textContent = `${minutes}m ${seconds}s`
+                }
+                updateCountdown()
+                clearInterval(window._fetchCountdownInterval)
+                window._fetchCountdownInterval = setInterval(updateCountdown, 1000)
+              }
+              break
+      
+            case 'toggle_fetch':
+              console.log('[WS] Toggle fetch state updated')
+              break
+      
+            case 'update_settings':
+              console.log('[WS] Settings updated via broadcast')
+              break
+      
+            default:
+              console.log('[WS] Unknown message:', data)
+          }
+        })
+      
+        /* ------------------------------------------------------------------ */
+        /* 2) Toggle Automatic Fetch                                          */
+        /* ------------------------------------------------------------------ */
+        const formToggle = document.getElementById('toggle-fetch-form')
+        const btnToggle = document.getElementById('toggle-btn')
+        const statusText = document.getElementById('fetch-status')
+      
+        formToggle?.addEventListener('submit', (e) => {
+          e.preventDefault()
+          const csrf = formToggle.querySelector('[name=csrfmiddlewaretoken]').value
+      
+          fetch(formToggle.action, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrf }
+          })
+            .then((res) => {
+              if (!res.ok) return
+              const wasEnabled = btnToggle.textContent.trim().includes('Stop')
+              // flip UI
+              btnToggle.textContent = wasEnabled ? '✅ Enable Automatic Fetching' : '⛔ Stop Automatic Fetching'
+              statusText.textContent = wasEnabled ? '🔴 متوقف' : '🟢 مفعل'
+      
+              sendBroadcast({
+                subtype: 'toggle_fetch',
+                enabled: !wasEnabled
+              })
+            })
+            .catch(console.error)
+        })
+      
+        /* ------------------------------------------------------------------ */
+        /* 3) Update Settings (interval + limit)                              */
+        /* ------------------------------------------------------------------ */
+      
+        const updateForm = document.getElementById('update-form')
+      
+        updateForm?.addEventListener('submit', (e) => {
+          e.preventDefault() // ✅ ضروري
+      
+          const csrf = updateForm.querySelector('[name=csrfmiddlewaretoken]').value
+          const fetch_interval = updateForm.querySelector('[name=fetch_interval]').value
+          const fetch_limit = updateForm.querySelector('[name=fetch_limit]').value
+      
+          fetch(updateForm.action, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'X-CSRFToken': csrf
+            },
+            body: `fetch_interval=${fetch_interval}&fetch_limit=${fetch_limit}`
+          })
+            .then((res) => {
+              if (!res.ok) return
+              alert('✅ Settings updated (no reload)')
+              sendBroadcast({
+                subtype: 'update_settings',
+                fetch_interval,
+                fetch_limit
+              })
+      
+              // ✅ بث Log واضح للمستخدم
+              sendBroadcast({
+                subtype: 'log',
+                message: `✅ تم تعديل الإعدادات إلى ${fetch_interval} دقيقة، ${fetch_limit} مقالة.`
+              })
+            })
+            .catch(console.error)
+        })
+      
+        /* ------------------------------------------------------------------ */
+        /* 4) Manual "Fetch Now"                                              */
+        /* ------------------------------------------------------------------ */
+      
+        const fetchNowForm = document.getElementById('fetch-now-form')
+      
+        fetchNowForm?.addEventListener('submit', (e) => {
+          e.preventDefault() // ✅ هذا مهم
+      
+          const csrf = fetchNowForm.querySelector('[name=csrfmiddlewaretoken]').value
+      
+          fetch(fetchNowForm.action, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrf }
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              console.log('[FETCH NOW] response:', data)
+              if (data.ok) {
+                alert('✅ تم الجلب الآن بنجاح!')
+                // ✅ بث log واضح
+                sendBroadcast({
+                  subtype: 'log',
+                  message: 'تم الجلب اليدوي بنجاح!'
+                })
+              } else {
+                alert('❌ فشل الجلب الآن.')
+              }
+            })
+            .catch((err) => {
+              console.error('Fetch now error:', err)
+              alert('⚠️ خطأ أثناء الجلب الآن.')
+            })
+        })
+      })
+    </script>
+  </body>
+</html>

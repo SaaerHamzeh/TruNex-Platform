@@ -1,0 +1,69 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Article Details</title>
+    <link rel="stylesheet" href="{% static 'css/article_details.css' %}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body>
+    <div class="article-details-wrapper">
+      <!-- ✅ العنوان -->
+      <div class="article-header">{{ article.news_article_title }}</div>
+
+      <!-- ✅ صورة ومعلومات -->
+      <div class="article-grid">
+        {% if article.news_article_image %}
+          <div class="image-box">
+            <img src="{{ article.news_article_image }}" alt="article image" />
+          </div>
+        {% endif %}
+
+        <div class="info-box">
+          <div class="info-line">
+            <span class="label">Source</span>
+            <span class="value">{{ article.news_article_source.news_source_name }}</span>
+          </div>
+
+          <div class="info-line">
+            <span class="label">Type</span>
+            <span class="value">{{ article.news_article_type|default:'General' }}</span>
+          </div>
+
+          {% if article.news_article_url %}
+            <div class="info-line">
+              <span class="label">Source URL</span>
+              <span class="value"><a href="{{ article.news_article_url }}" target="_blank">{{ article.news_article_url }}</a></span>
+            </div>
+          {% endif %}
+
+          {% if article.news_article_published_at %}
+            <div class="info-line">
+              <span class="label">Published At</span>
+              <span class="value">{{ article.news_article_published_at|date:'Y-m-d H:i' }}</span>
+            </div>
+          {% endif %}
+
+          {% comment %} <div class="info-line">
+            <span class="label">Category:</span>
+            <span class="value">{{ article.news_article_category.name|default:'Uncategorized' }}</span>
+          </div> {% endcomment %}
+
+          {% if article.news_article_keywords %}
+            <div class="info-line">
+              <span class="label">Keywords</span>
+              <span class="value">{{ article.news_article_keywords }}</span>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- ✅ ملخص -->
+      <div class="article-summary-box">
+        <strong>Content Summary</strong>
+        <p>{{ article.news_article_content|linebreaks }}</p>
+      </div>
+    </div>
+  </body>
+</html>
